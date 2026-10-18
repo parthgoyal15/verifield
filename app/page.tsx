@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo } from "@/components/ui";
+import { FarmerIcon, InsurerIcon, Logo, LogoMark } from "@/components/ui";
 
 const STEPS = [
   { t: "Before", d: "Storm warning with crop-stage advice, plus a 10-second baseline photo request." },
@@ -12,14 +12,21 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 py-10">
       <header className="flex items-center justify-between">
-        <Logo className="text-xl" />
+        <Logo mark className="text-xl" />
         <nav className="flex gap-4 text-sm text-slate-600">
-          <Link href="/farmer" className="hover:text-slate-900">Farmer app</Link>
-          <Link href="/insurer" className="hover:text-slate-900">Insurer console</Link>
+          <Link href="/farmer" className="flex items-center gap-1.5 hover:text-slate-900">
+            <FarmerIcon className="h-4 w-4" />
+            Farmer app
+          </Link>
+          <Link href="/insurer" className="flex items-center gap-1.5 hover:text-slate-900">
+            <InsurerIcon className="h-4 w-4" />
+            Insurer console
+          </Link>
         </nav>
       </header>
 
       <section className="mt-16 max-w-3xl">
+        <LogoMark className="mb-6 h-16 w-16 shadow-lg shadow-emerald-600/20 rounded-[22%]" />
         <p className="text-sm font-medium uppercase tracking-wider text-emerald-700">AI claims agent · Typhoon Yagi demo</p>
         <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
           Every field verified.
@@ -32,10 +39,12 @@ export default function Home() {
           catches fraud, and starts the payout the same day.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/farmer" className="rounded-lg bg-emerald-600 px-5 py-3 font-medium text-white hover:bg-emerald-700">
+          <Link href="/farmer" className="flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 font-medium text-white hover:bg-emerald-700">
+            <FarmerIcon />
             Open the farmer chat
           </Link>
-          <Link href="/insurer" className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-medium hover:bg-slate-50">
+          <Link href="/insurer" className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 font-medium hover:bg-slate-50">
+            <InsurerIcon />
             Open the insurer console
           </Link>
         </div>
@@ -53,8 +62,8 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto pt-16 text-xs text-slate-400">
-        Built with Gemini, hosted on Render. Demo data: Typhoon Yagi (Sept 2024), Vietnam and the Philippines. Weather by
-        Open-Meteo. Satellite tiles are placeholders until replaced with Copernicus Sentinel-1 exports.
+        Built with Gemini, hosted on Render. Demo data: Typhoon Yagi (Sept 2024) in Vietnam and the Philippines, and the
+        Bihar floods (Sept 2024) in India. Weather by Open-Meteo.
       </footer>
     </main>
   );

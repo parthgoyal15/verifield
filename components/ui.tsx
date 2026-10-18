@@ -61,10 +61,51 @@ export function ConfidenceBar({ value, lane }: { value?: number; lane?: Lane }) 
   );
 }
 
-export function Logo({ className = "" }: { className?: string }) {
+/** The check-over-field mark from docs/icon.svg. */
+export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
   return (
-    <span className={`font-semibold tracking-tight ${className}`}>
-      <span className="text-emerald-600">Veri</span>field<span className="text-slate-400">.ai</span>
+    <svg viewBox="0 0 96 96" className={className} aria-hidden>
+      <rect width="96" height="96" rx="22" fill="#059669" />
+      <path d="M14 70 Q48 52 82 70" fill="none" stroke="#a7f3d0" strokeWidth="5" strokeLinecap="round" />
+      <path d="M14 82 Q48 64 82 82" fill="none" stroke="#6ee7b7" strokeWidth="5" strokeLinecap="round" />
+      <path d="M27 36 L42 51 L70 21" fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function Logo({ className = "", mark = false }: { className?: string; mark?: boolean }) {
+  return (
+    <span className={`inline-flex items-center gap-2 font-semibold tracking-tight ${className}`}>
+      {mark && <LogoMark className="h-[1.6em] w-[1.6em]" />}
+      <span>
+        <span className="text-emerald-600">Veri</span>field<span className="text-slate-400">.ai</span>
+      </span>
     </span>
+  );
+}
+
+const iconProps = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true } as const;
+
+/** Phone with a chat bubble: the farmer's messaging app. */
+export function FarmerIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+      <path d="M10.5 4.5h3" />
+      <path d="M9 8.5h6a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3.5L9.5 15v-1.5H9a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z" />
+      <circle cx="12" cy="19" r="0.6" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Dashboard with a shield check: the insurer's review console. */
+export function InsurerIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <path d="M8 21h8M12 17v4" />
+      <path d="M12 6.5l3 1.2v2.2c0 1.8-1.3 3.1-3 3.6-1.7-.5-3-1.8-3-3.6V7.7z" />
+      <path d="M10.8 9.8l.9.9 1.6-1.7" />
+    </svg>
   );
 }
