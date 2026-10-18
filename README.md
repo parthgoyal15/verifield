@@ -11,7 +11,9 @@
 
 Verifield is a voice-first, multilingual AI claims agent for smallholder farmers. It warns farmers before a disaster and reaches out to them after it. It takes a claim in the farmer's own language from a voice note and a few photos. It then checks the damage against satellite radar, recorded rainfall, the policy and a set of fraud signals, and sends a cash advance to the farmer's mobile wallet within minutes.
 
-Built with **Gemini** for the Google AI JAPAC hackathon. It runs as a single **Next.js** service on **Cloud Run**.
+Built with **Gemini** for the Google AI JAPAC hackathon. It runs as a single **Next.js** service on **Render**.
+
+**Live demo:** [verifield-lh5o.onrender.com](https://verifield-lh5o.onrender.com)
 
 ---
 
@@ -32,7 +34,7 @@ Built with **Gemini** for the Google AI JAPAC hackathon. It runs as a single **N
 - [Demo walkthrough](#demo-walkthrough)
 - [API reference](#api-reference)
 - [Project structure](#project-structure)
-- [Deploy to Cloud Run](#deploy-to-cloud-run)
+- [Deploy to Render](#deploy-to-render)
 - [Future steps](#future-steps)
 - [Data sources](#data-sources)
 
@@ -133,7 +135,7 @@ flowchart LR
     I["Insurer console<br/>+ evidence view"]
   end
 
-  subgraph CR["Cloud Run: one Next.js 16 service"]
+  subgraph CR["Render: one Next.js 16 service"]
     API["Route handlers<br/>/api/*"]
     INTAKE["Intake agent<br/>(function calling)"]
     DETAILS["Mandatory details<br/>+ declaration"]
@@ -164,7 +166,7 @@ flowchart LR
 
 Main design choices:
 
-- **One deployable.** Pages and the API live in the same Next.js app (App Router plus route handlers), so the whole thing deploys with a single `gcloud run deploy`.
+- **One deployable.** Pages and the API live in the same Next.js app (App Router plus route handlers), so the whole thing deploys as a single Render web service from `render.yaml`.
 - **Agent plus deterministic pipeline.** The conversational part is a Gemini function-calling agent. Everything that affects money is plain code, so it can be tested and audited.
 - **Parallel checks.** The five checks run with `Promise.all`, and each one writes its result as soon as it finishes, so the evidence view fills in live.
 - **Always-on AI steps.** Each Gemini call is paired with a labelled rule-based engine, so every demo and field pilot runs smoothly end to end.
@@ -317,7 +319,7 @@ Mismatches send a claim to a person rather than rejecting it outright, so honest
 | Images | `sharp` (normalising, perceptual hash), `exifr` (GPS and capture time) |
 | Weather | Open-Meteo historical archive API |
 | Satellite | Sentinel-1 SAR VV tiles (Copernicus Browser exports) |
-| Hosting | Google Cloud Run |
+| Hosting | Render (Node web service) |
 
 ---
 
@@ -340,7 +342,7 @@ npm run dev                    # http://localhost:3000
 
 For a production build: `npm run build && npm run start`.
 
-Open the chat on a phone to use the real camera and microphone: `http://<your-ip>:3000/farmer/h1` on the same network, or the Cloud Run HTTPS URL for voice notes.
+Open the chat on a phone to use the real camera and microphone: `http://<your-ip>:3000/farmer/h1` on the same network, or the Render HTTPS URL for voice notes.
 
 ### Pages
 
@@ -474,32 +476,21 @@ test-photos/                    demo photos with matching GPS and timestamps
 
 ---
 
-## Deploy to Cloud Run
+## Deploy to Render
 
-Deploy as a **single always-on instance** with **CPU always allocated**, so verification runs in the background while the farmer keeps chatting.
+Verifield deploys as a **single Render web service**: one long-running Node process, so verification runs in the background while the farmer keeps chatting. The service is defined in [`render.yaml`](render.yaml) (Node 22, `npm ci && npm run build`, then `npm start`, Singapore region).
 
-```bash
-gcloud config set project YOUR_PROJECT
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+1. Open [Deploy to Render](https://render.com/deploy?repo=https://github.com/parthgoyal15/verifield) and sign in with GitHub.
+2. Paste your `GEMINI_API_KEY` when prompted. `GEMINI_MODEL` defaults to `gemini-flash-latest`.
+3. Click **Deploy Blueprint**. Every push to `main` redeploys automatically.
 
-gcloud run deploy verifield \
-  --source . \
-  --region asia-southeast1 \
-  --allow-unauthenticated \
-  --max-instances 1 --min-instances 1 \
-  --no-cpu-throttling \
-  --memory 1Gi \
-  --set-env-vars GEMINI_MODEL=gemini-flash-latest \
-  --set-secrets GEMINI_API_KEY=gemini-key:latest
-```
-
-Before deploying, create the secret: `printf "$KEY" | gcloud secrets create gemini-key --data-file=-`.
+On the free plan the service sleeps after 15 minutes without traffic and wakes on the next request, which takes 30 to 60 seconds and starts again from the demo seed data. Use a paid instance to keep it always on.
 
 ---
 
 ## Future steps
 
-1. **Durable storage on Google Cloud.** Move records to Firestore and photos and voice notes to Cloud Storage, behind the existing `lib/store.ts` layer, so Verifield can scale to many Cloud Run instances.
+1. **Durable storage on Google Cloud.** Move records to Firestore and photos and voice notes to Cloud Storage, behind the existing `lib/store.ts` layer, so Verifield can scale to many instances.
 2. **Automatic satellite analysis.** Pull Sentinel-1 scenes from Google Earth Engine as soon as an event is declared, and measure flood extent for each field's boundary.
 3. **WhatsApp, Zalo and SMS.** Put the same agent behind the channels farmers already use, starting with the WhatsApp Business API.
 4. **Real payouts.** Connect MoMo, GCash and UPI payout APIs so advances and settlements reach farmers' wallets directly.

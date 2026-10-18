@@ -1,8 +1,8 @@
 import { createSeed } from "./seed";
 import type { DB, Farmer, Message, MessageCard } from "./types";
 
-// In-memory store. Survives dev hot reloads via globalThis. On Cloud Run, run with
-// max-instances=1 so every request sees the same state. Swap for Firestore later behind
+// In-memory store. Survives dev hot reloads via globalThis. In production, run a
+// single instance so every request sees the same state. Swap for Firestore later behind
 // the same functions.
 const g = globalThis as unknown as { __verifieldDb?: DB };
 

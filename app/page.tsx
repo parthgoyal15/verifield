@@ -53,7 +53,7 @@ export default function Home() {
       </section>
 
       <footer className="mt-auto pt-16 text-xs text-slate-400">
-        Built with Gemini on Google Cloud Run. Demo data: Typhoon Yagi (Sept 2024), Vietnam and the Philippines. Weather by
+        Built with Gemini, hosted on Render. Demo data: Typhoon Yagi (Sept 2024), Vietnam and the Philippines. Weather by
         Open-Meteo. Satellite tiles are placeholders until replaced with Copernicus Sentinel-1 exports.
       </footer>
     </main>
