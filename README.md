@@ -26,7 +26,7 @@ Built with **Gemini** for the Google AI JAPAC hackathon. It runs as a single **N
 - [API reference](#api-reference)
 - [Project structure](#project-structure)
 - [Deploy to Cloud Run](#deploy-to-cloud-run)
-- [Limitations and roadmap](#limitations-and-roadmap)
+- [Future steps](#future-steps)
 - [Data sources](#data-sources)
 
 ---
@@ -490,18 +490,16 @@ Before deploying, create the secret: `printf "$KEY" | gcloud secrets create gemi
 
 ---
 
-## Limitations and roadmap
+## Future steps
 
-This is a hackathon prototype. Known gaps:
-
-- **Storage.** Everything is in memory and is lost on restart. Next step: Firestore for records and Cloud Storage for media, behind `lib/store.ts`.
-- **Satellite.** Uses pre-exported SAR tiles. Next step: pull Sentinel-1 scenes automatically (Google Earth Engine) and compute flood extent per field polygon.
-- **Channels.** A web chat stands in for WhatsApp, Zalo or SMS. Next step: the WhatsApp Business API, with the same agent behind it.
-- **Payments.** Wallet credits are simulated. Next step: real MoMo, GCash and UPI payout APIs.
-- **Identity and land records.** Seeded. Next step: national ID / KYC and land-record lookups, which also catch two farmers claiming the same plot.
-- **Fraud.** There is no claims history yet. Next step: repeat-claimer patterns across seasons, and village-level anomaly detection.
-- **Policies.** The Indian policy is a demo product (Bihar runs its own crop-assistance scheme rather than PMFBY). Real products, dates and coordinates must be confirmed with partners.
-- **Speech.** Without a Gemini key, the 🔊 button depends on the browser having a voice for the language. macOS has Hindi and Vietnamese voices but no Tagalog voice.
+1. **Durable storage on Google Cloud.** Move records to Firestore and photos and voice notes to Cloud Storage, behind the existing `lib/store.ts` layer, so Verifield can scale to many Cloud Run instances.
+2. **Automatic satellite analysis.** Pull Sentinel-1 scenes from Google Earth Engine as soon as an event is declared, and measure flood extent for each field's boundary.
+3. **WhatsApp, Zalo and SMS.** Put the same agent behind the channels farmers already use, starting with the WhatsApp Business API.
+4. **Real payouts.** Connect MoMo, GCash and UPI payout APIs so advances and settlements reach farmers' wallets directly.
+5. **Identity and land records.** Link national ID / KYC and land-record systems for instant enrolment. This will also stop two farmers claiming the same plot.
+6. **Smarter fraud detection.** Learn from claims history across seasons to spot repeat-claimer patterns and village-level anomalies.
+7. **Insurer and government pilots.** Run pilots with crop insurers and disaster-relief agencies in Vietnam, the Philippines and India. Use their real products, then extend to more perils (drought, pests, hail).
+8. **More languages and voices.** Add Bengali, Bahasa Indonesia, Thai and Khmer, plus regional dialects, using Gemini's speech for every language.
 
 ---
 
