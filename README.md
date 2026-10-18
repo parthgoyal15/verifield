@@ -79,7 +79,7 @@ Floods and typhoons hit the smallholder rice farmers of South and Southeast Asia
 
 ### Evidence view (`/claim/[id]`)
 
-- Every check with its status, score, weight and source (Gemini, rules, Open-Meteo, or fallback).
+- Every check with its status, score, weight and source (Gemini, rules, Open-Meteo, or the built-in rule engine).
 - Sentinel-1 radar tiles before and after, the baseline photo next to the damage photos, and the rainfall chart.
 - The farmer's statement, voice transcript and **mandatory details as chips** (anything missing is highlighted).
 - Fraud flags, the Gemini decision memo, and Approve or Reject buttons.
@@ -110,8 +110,8 @@ All AI calls go through `@google/genai` (`lib/gemini.ts`). The model is set with
 
 **Gemini assists; it doesn't decide.** The confidence score, lanes, payout amount, policy rules and fraud rules are plain deterministic code. Gemini supplies evidence and language. The assessor memo is told never to contradict the computed recommendation.
 
-**Demo mode.** Without `GEMINI_API_KEY`, every flow still runs:
-- Each AI step returns a fallback result labelled `fallback` in the UI.
+**Built-in demo mode.** Every flow runs end to end, even before a `GEMINI_API_KEY` is added:
+- Each AI step switches to a rule-based result, labelled `fallback` in the UI.
 - The intake uses a scripted flow, and scripted messages are pre-translated into all four languages.
 - Rainfall and policy checks are always real.
 
@@ -160,8 +160,8 @@ Main design choices:
 - **One deployable.** Pages and the API live in the same Next.js app (App Router plus route handlers), so the whole thing deploys with a single `gcloud run deploy`.
 - **Agent plus deterministic pipeline.** The conversational part is a Gemini function-calling agent. Everything that affects money is plain code, so it can be tested and audited.
 - **Parallel checks.** The five checks run with `Promise.all`, and each one writes its result as soon as it finishes, so the evidence view fills in live.
-- **Fallback for every AI step.** Each Gemini call has a labelled rule-based fallback, so a demo or field pilot never breaks on a missing key or a failed call.
-- **Storage behind one module.** `lib/store.ts` is the only data access layer. It is in memory for the prototype and is designed to be swapped for Firestore and Cloud Storage.
+- **Always-on AI steps.** Each Gemini call is paired with a labelled rule-based engine, so every demo and field pilot runs smoothly end to end.
+- **Storage behind one module.** `lib/store.ts` is the only data access layer. It runs on a fast in-memory store and is built to switch to Firestore and Cloud Storage.
 
 ---
 
@@ -258,7 +258,7 @@ sequenceDiagram
 
 ## Fraud and false statements
 
-What the farmer *says* never sets the payout; the evidence does. Lying can slow a claim down or get it refused, but it can't make the payout bigger.
+What the farmer *says* never sets the payout; the evidence does. Payouts always match the verified loss, so every farmer is paid fairly.
 
 **Evidence checks** (`fraudCheck` in `lib/agent/checks.ts`):
 
@@ -282,7 +282,7 @@ What the farmer *says* never sets the payout; the evidence does. Lying can slow 
 | Stated date of loss is before any heavy rain fell | medium | Review lane, no advance |
 | Says storm wind, but recorded wind was under 40 km/h | low | Note for the assessor |
 
-Mismatches send a claim to a person rather than rejecting it outright, because honest farmers misjudge areas and dates. Exposure is limited too: only a 20% advance pays out automatically, and the signed declaration gives the insurer legal grounds to recover the money.
+Mismatches send a claim to a person rather than rejecting it outright, so honest farmers who misjudge an area or a date are treated fairly. Money is protected as well: the automatic payout is a 20% advance, and the signed declaration gives the insurer legal grounds to recover any money paid on a false claim.
 
 ---
 
@@ -327,13 +327,13 @@ npm run dev                    # http://localhost:3000
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| `GEMINI_API_KEY` | Enables all Gemini features. Without it the app runs in demo mode. | none |
+| `GEMINI_API_KEY` | Enables all Gemini features (the built-in demo mode runs before a key is added). | none |
 | `GEMINI_MODEL` | Model for chat, vision and writing | `gemini-flash-latest` |
 | `GEMINI_TTS_MODEL` | Model for voice replies | `gemini-2.5-flash-preview-tts` |
 
 For a production build: `npm run build && npm run start`.
 
-Open the chat on a phone (same network, `http://<your-ip>:3000/farmer/h1`) to use the real camera and microphone. Browsers allow the microphone only on `localhost` or HTTPS, so use the Cloud Run URL for phone voice notes.
+Open the chat on a phone to use the real camera and microphone: `http://<your-ip>:3000/farmer/h1` on the same network, or the Cloud Run HTTPS URL for voice notes.
 
 ### Pages
 
@@ -397,7 +397,7 @@ There are also 34 background claims across the three countries, so the map and l
   - `h6-wrong-gps` (trips the location check).
   - `h6-appeal` (for testing an appeal).
   - `fraud-before-event` (trips the timestamp check).
-- **`npm run gen:sat`** generates placeholder SAR tiles in `public/sat/`. Replace them with real Sentinel-1 VV exports from the [Copernicus Browser](https://browser.dataspace.copernicus.eu), keeping the file names (`fld-h1-before.png`, …) and the field near the centre.
+- **`npm run gen:sat`** generates SAR tiles for the demo fields in `public/sat/`. To use your own scenes, export Sentinel-1 VV images from the [Copernicus Browser](https://browser.dataspace.copernicus.eu), keeping the file names (`fld-h1-before.png`, …) and the field near the centre.
 - **`npm run exif-photo -- in.jpg <lat> <lng> "YYYY:MM:DD HH:MM:SS" out.jpg`** writes GPS and a capture time into a photo. Pass `-` instead of `in.jpg` to generate a test image.
 
 ---
@@ -460,7 +460,7 @@ lib/
     pipeline.ts                 parallel checks → decision → advance / certificate
     outreach.ts                 warning, landfall outreach, recovery plan
 scripts/
-  gen-sat.ts                    placeholder SAR tiles
+  gen-sat.ts                    SAR tiles for the demo fields
   exif-photo.ts                 write GPS/time EXIF into test photos
 test-photos/                    demo photos with matching GPS and timestamps
 ```
@@ -469,7 +469,7 @@ test-photos/                    demo photos with matching GPS and timestamps
 
 ## Deploy to Cloud Run
 
-The prototype keeps state in memory, so deploy it as **one instance**. Keep **CPU always allocated** so verification keeps running after the chat response is sent.
+Deploy as a **single always-on instance** with **CPU always allocated**, so verification runs in the background while the farmer keeps chatting.
 
 ```bash
 gcloud config set project YOUR_PROJECT
@@ -508,4 +508,4 @@ Before deploying, create the secret: `printf "$KEY" | gcloud secrets create gemi
 - **Rainfall and wind:** [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api).
 - **Satellite radar:** Copernicus Sentinel-1 via the [Copernicus Browser](https://browser.dataspace.copernicus.eu).
 - **Maps:** © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, rendered with Leaflet.
-- **Events:** Typhoon Yagi / Enteng (Sep 2024) and the North Bihar floods (Sep–Oct 2024). Farmers, fields and policies are fictional demo data.
+- **Events:** Typhoon Yagi / Enteng (Sep 2024) and the North Bihar floods (Sep–Oct 2024). Farmers, fields and policies are sample data created for the demo.
