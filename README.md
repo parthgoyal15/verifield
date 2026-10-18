@@ -319,7 +319,7 @@ Mismatches send a claim to a person rather than rejecting it outright, because h
 Needs Node.js 20 or later.
 
 ```bash
-git clone <this-repo> && cd verifield
+git clone https://github.com/parthgoyal15/verifield.git && cd verifield
 npm install
 cp .env.example .env.local     # add GEMINI_API_KEY (from https://aistudio.google.com)
 npm run dev                    # http://localhost:3000
