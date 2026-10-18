@@ -1,6 +1,13 @@
-# Verifield.ai
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.svg">
+    <img src="docs/logo-light.svg" alt="Verifield.ai" width="360">
+  </picture>
+</p>
 
-**Every field verified, every farmer paid.**
+<p align="center"><b>Every field verified, every farmer paid.</b></p>
+
+# Verifield.ai
 
 Verifield is a voice-first, multilingual AI claims agent for smallholder farmers. It warns farmers before a disaster and reaches out to them after it. It takes a claim in the farmer's own language from a voice note and a few photos. It then checks the damage against satellite radar, recorded rainfall, the policy and a set of fraud signals, and sends a cash advance to the farmer's mobile wallet within minutes.
 
